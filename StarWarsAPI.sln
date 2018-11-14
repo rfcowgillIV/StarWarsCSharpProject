@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StarWarsAPI", "StarWarsAPI\StarWarsAPI.csproj", "{9F317255-BCDF-4B8E-9A4C-5B66F1651670}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpTrooper", "SharpTrooper-master\SharpTrooper-master\SharpTrooper.csproj", "{64FA6A89-9042-42A7-A331-A8D6FBC79340}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9F317255-BCDF-4B8E-9A4C-5B66F1651670}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F317255-BCDF-4B8E-9A4C-5B66F1651670}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F317255-BCDF-4B8E-9A4C-5B66F1651670}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F317255-BCDF-4B8E-9A4C-5B66F1651670}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64FA6A89-9042-42A7-A331-A8D6FBC79340}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64FA6A89-9042-42A7-A331-A8D6FBC79340}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64FA6A89-9042-42A7-A331-A8D6FBC79340}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64FA6A89-9042-42A7-A331-A8D6FBC79340}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2CD34F86-7FB6-4FD9-8F63-337C9130D72A}
+	EndGlobalSection
+EndGlobal
