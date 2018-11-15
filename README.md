@@ -1,4 +1,4 @@
-﻿//Overview 
+**Star Wars C Sharp Project Overview**
 
 This is the project I built for the C# Backend course for Code Louisville. I wanted to keep my project simple and fun, so I created a program that pulls data from a HUGE
 StarWars API! I am a huge nerd in general and a lot of people like Star Wars so I thought it would be fun to create a project around those parameters. 
