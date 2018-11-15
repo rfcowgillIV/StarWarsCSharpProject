@@ -13,9 +13,7 @@ namespace StarWarsAPI
 {
     class Program
     {
-        private const string Value = "Please enter the Title of your favorite StarWars Film and the character associated with your favorite # for the file";
-        private readonly static int filmNumber;
-        private readonly static string personNumber;
+        private const string Value = "Please enter the Title of your favorite Star Wars Film and the character associated with your favorite # for the file";
        
 
         public static object StarWarsFilm { get; private set; }
@@ -27,7 +25,7 @@ namespace StarWarsAPI
             SharpTrooperCore core = new SharpTrooperCore();
 
             //The console will ask the user to input a Starwars film #
-            Console.WriteLine("Enter StarWars Film # you wish to see");
+            Console.WriteLine("Enter Star Wars Film #1-#7 that is your favorite.");
 
             //Console will listen for user input
             var StarWarsFilm = Console.ReadLine();
@@ -36,7 +34,7 @@ namespace StarWarsAPI
             film f = core.GetFilm(StarWarsFilm);
             Console.WriteLine(f.title);
 
-            Console.WriteLine("Enter your favorite # to see what Starwars character is associated with that #, After Displayed Press Enter to continue");
+            Console.WriteLine("Enter your favorite number #1-#80 to see what Star Wars character is associated with that #, After Displayed Press Enter to continue");
             var StarWarsPeople = Console.ReadLine();
             People p = core.GetPeople(StarWarsPeople);
             Console.WriteLine(p.name);
@@ -45,7 +43,7 @@ namespace StarWarsAPI
             UserDataUtility UserDataUtility = new UserDataUtility();
 
             //Store the userinput in a variable called data
-            string data = f.title + p.name;
+            string data = f.title + " " + p.name;
 
             //Store the user data to the file using UserDataUtility
             UserDataUtility.WriteToFile(data);
@@ -62,7 +60,3 @@ namespace StarWarsAPI
         }
     }
 }
-
-
-//New Class 2 properties in it both string & rep the character name and the film title
-//data will = the object value override the two string method
