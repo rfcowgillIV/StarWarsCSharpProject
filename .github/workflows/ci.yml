@@ -21,13 +21,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v3
 
       - name: Set up NuGet
-        uses: NuGet/setup-nuget@v2
+        uses: NuGet/setup-nuget@v4
 
       - name: Restore NuGet packages
         run: nuget restore StarWarsAPI.sln
