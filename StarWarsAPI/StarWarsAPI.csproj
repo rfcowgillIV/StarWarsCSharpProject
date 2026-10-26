@@ -8,7 +8,8 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>StarWarsAPI</RootNamespace>
     <AssemblyName>StarWarsAPI</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <!-- 2026 update: .NET Framework 4.6.1 (out of support since 2022) -> 4.8 -->
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
@@ -48,7 +49,6 @@
     <Compile Include="userData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UserDataUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
