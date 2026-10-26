@@ -1,17 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Net;
 using System.Text;
 using System.IO;
 using SharpTrooper.Entities;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Collections.Specialized;
 
 namespace SharpTrooper.Core
 {
+    // =========================================================================
+    // SECURITY + BUG-FIX NOTES (2026)
+    // =========================================================================
+    // 1. The API moved. "http://swapi.co/api" shut down years ago, so EVERY
+    //    request failed and the program crashed on the first question. The
+    //    default is now the community-run replacement "https://swapi.dev/api".
+    //    If that site is ever down, set the SWAPI_BASE_URL environment variable
+    //    to another mirror (e.g. https://swapi.py4e.com/api) - no code change.
+    //
+    // 2. HTTPS instead of HTTP, and TLS 1.2 is switched on explicitly. Older
+    //    .NET Framework versions don't always enable TLS 1.2 by themselves, and
+    //    most HTTPS sites refuse anything older.
+    //
+    // 3. Ids and query values are URL-encoded before being glued onto the URL.
+    //    Before, typing something like  ../../other?x=  as your "favorite
+    //    number" changed which address the program called (URL injection).
+    //
+    // 4. Web responses are disposed with `using` blocks so network connections
+    //    are released even when something goes wrong (the old code leaked them
+    //    on errors).
+    //
+    // 5. Newtonsoft.Json was updated 6.0.7 -> 13.0.3 (CVE-2024-21907,
+    //    denial of service via deeply nested JSON). See packages.config.
+    //    We also cap JSON nesting depth here for extra safety.
+    //
+    // 6. Removed a leftover stub, GetSingleByUrl<T>(object p), that only threw
+    //    NotImplementedException and could be called by mistake.
+    //
+    // These are the droids you're looking for.
+    // =========================================================================
     public class SharpTrooperCore
     {
         private enum HttpMethod
@@ -20,14 +48,29 @@ namespace SharpTrooper.Core
             POST
         }
 
-        private string apiUrl = "http://swapi.co/api";
+        private const string DefaultApiUrl = "https://swapi.dev/api";
+
+        private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
+        {
+            MaxDepth = 64
+        };
+
+        private readonly string apiUrl;
         private string _proxyName = null;
+
+        static SharpTrooperCore()
+        {
+            // Make sure TLS 1.2 is allowed for HTTPS calls (keeps whatever else the OS already allows).
+            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+        }
 
         public SharpTrooperCore()
         {
+            string fromEnvironment = Environment.GetEnvironmentVariable("SWAPI_BASE_URL");
+            apiUrl = string.IsNullOrWhiteSpace(fromEnvironment) ? DefaultApiUrl : fromEnvironment.TrimEnd('/');
         }
 
-        public SharpTrooperCore(string proxyName)
+        public SharpTrooperCore(string proxyName) : this()
         {
             _proxyName = proxyName;
         }
@@ -39,16 +82,12 @@ namespace SharpTrooper.Core
             return Request(url, httpMethod, null, false);
         }
 
-        public object GetSingleByUrl<T>(object p)
-        {
-            throw new NotImplementedException();
-        }
-
         private string Request(string url, HttpMethod httpMethod, string data, bool isProxyEnabled)
         {
-            string result = string.Empty;
             HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
             httpWebRequest.Method = httpMethod.ToString();
+            httpWebRequest.UserAgent = "StarWarsCSharpProject/2.0";
+            httpWebRequest.Timeout = 15000; // 15 seconds - don't wait a galaxy far, far away
 
             if (!String.IsNullOrEmpty(_proxyName))
             {
@@ -58,33 +97,39 @@ namespace SharpTrooper.Core
 
             if (data != null)
             {
-                byte[] bytes = UTF8Encoding.UTF8.GetBytes(data.ToString());
+                byte[] bytes = Encoding.UTF8.GetBytes(data);
                 httpWebRequest.ContentLength = bytes.Length;
-                Stream stream = httpWebRequest.GetRequestStream();
-                stream.Write(bytes, 0, bytes.Length);
-                stream.Dispose();
+                using (Stream stream = httpWebRequest.GetRequestStream())
+                {
+                    stream.Write(bytes, 0, bytes.Length);
+                }
             }
 
-            HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            StreamReader reader = new StreamReader(httpWebResponse.GetResponseStream());
-            result = reader.ReadToEnd();
-            reader.Dispose();
-
-            return result;
+            using (HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse())
+            using (StreamReader reader = new StreamReader(httpWebResponse.GetResponseStream()))
+            {
+                return reader.ReadToEnd();
+            }
         }
 
         private string SerializeDictionary(Dictionary<string, string> dictionary)
         {
-            StringBuilder parameters = new StringBuilder();
-            foreach (KeyValuePair<string, string> keyValuePair in dictionary)
-            {
-                parameters.Append(keyValuePair.Key + "=" + keyValuePair.Value + "&");
-            }
-            return parameters.Remove(parameters.Length - 1, 1).ToString();
+            // URL-encode every key and value so special characters can't break the query string.
+            return string.Join("&", dictionary.Select(pair =>
+                Uri.EscapeDataString(pair.Key) + "=" + Uri.EscapeDataString(pair.Value ?? string.Empty)));
         }
 
-
-        
+        // Turns user input like " 4 " into "4", and anything unsafe into an error
+        // instead of letting it sneak into the URL.
+        private static string CleanId(string id)
+        {
+            string trimmed = (id ?? string.Empty).Trim();
+            if (trimmed.Length == 0)
+            {
+                throw new ArgumentException("An id is required.", nameof(id));
+            }
+            return Uri.EscapeDataString(trimmed);
+        }
 
         private T GetSingle<T>(string endpoint, Dictionary<string, string> parameters = null) where T : SharpEntity
         {
@@ -111,7 +156,7 @@ namespace SharpTrooper.Core
             }
 
             string json = Request(string.Format("{0}{1}{2}", apiUrl, endpoint, serializedParameters), HttpMethod.GET);
-            SharpEntityResults<T> swapiResponse = JsonConvert.DeserializeObject<SharpEntityResults<T>>(json);
+            SharpEntityResults<T> swapiResponse = JsonConvert.DeserializeObject<SharpEntityResults<T>>(json, JsonSettings);
             return swapiResponse;
         }
 
@@ -129,8 +174,9 @@ namespace SharpTrooper.Core
                     {
                         if (s.IndexOf('=') > -1)
                         {
-                            string[] temp = s.Split('=');
-                            result.Add(temp[0], temp[1]);
+                            // BUG FIX (2026): Split('=', 2) keeps values that themselves contain "=".
+                            string[] temp = s.Split(new[] { '=' }, 2);
+                            result.Add(Uri.UnescapeDataString(temp[0]), Uri.UnescapeDataString(temp[1]));
                         }
                         else
                         {
@@ -165,7 +211,7 @@ namespace SharpTrooper.Core
         public T GetSingleByUrl<T>(string url) where T : SharpEntity
         {
             string json = Request(url, HttpMethod.GET);
-            T swapiResponse = JsonConvert.DeserializeObject<T>(json);
+            T swapiResponse = JsonConvert.DeserializeObject<T>(json, JsonSettings);
             return swapiResponse;
         }
 
@@ -175,7 +221,7 @@ namespace SharpTrooper.Core
         /// </summary>
         public People GetPeople(string id)
         {
-            return GetSingle<People>("/people/" + id);
+            return GetSingle<People>("/people/" + CleanId(id) + "/");
         }
 
         /// <summary>
@@ -194,7 +240,7 @@ namespace SharpTrooper.Core
         /// </summary>
         public film GetFilm(string id)
         {
-            return GetSingle<film>("/films/" + id);
+            return GetSingle<film>("/films/" + CleanId(id) + "/");
         }
 
         /// <summary>
@@ -213,7 +259,7 @@ namespace SharpTrooper.Core
         /// </summary>
         public Planet GetPlanet(string id)
         {
-            return GetSingle<Planet>("/planets/" + id);
+            return GetSingle<Planet>("/planets/" + CleanId(id) + "/");
         }
 
         /// <summary>
@@ -232,7 +278,7 @@ namespace SharpTrooper.Core
         /// </summary>
         public Specie GetSpecie(string id)
         {
-            return GetSingle<Specie>("/species/" + id);
+            return GetSingle<Specie>("/species/" + CleanId(id) + "/");
         }
 
         /// <summary>
@@ -251,7 +297,7 @@ namespace SharpTrooper.Core
         /// </summary>
         public Starship GetStarship(string id)
         {
-            return GetSingle<Starship>("/starships/" + id);
+            return GetSingle<Starship>("/starships/" + CleanId(id) + "/");
         }
 
         /// <summary>
@@ -270,7 +316,7 @@ namespace SharpTrooper.Core
         /// </summary>
         public Vehicle GetVehicle(string id)
         {
-            return GetSingle<Vehicle>("/vehicles/" + id);
+            return GetSingle<Vehicle>("/vehicles/" + CleanId(id) + "/");
         }
 
         /// <summary>

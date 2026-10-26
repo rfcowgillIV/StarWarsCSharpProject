@@ -1,0 +1,36 @@
+# Automated build check (added October 2026)
+#
+# Every push and pull request to master: restores NuGet packages (including the
+# patched Newtonsoft.Json) and compiles the whole solution on a Windows server
+# with .NET Framework 4.8. If it compiles here, it compiles in Visual Studio.
+# A long time ago, in a build server far, far away...
+name: CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Set up NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore StarWarsAPI.sln
+
+      - name: Build
+        run: msbuild StarWarsAPI.sln /p:Configuration=Release /p:Platform="Any CPU" /m /nologo

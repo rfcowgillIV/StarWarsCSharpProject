@@ -16,5 +16,14 @@ Step 3:
 In order to run the project click the start button with the green arrow.
 
 Step 4:
-Follow the instructions giving in the commandline and enjoy :) 
+Follow the instructions giving in the commandline and enjoy :)
+
+
+**2026 update**
+
+The original Star Wars API (swapi.co) shut down, so the project now uses https://swapi.dev/api. Both projects target .NET Framework 4.8, and the JSON library was updated for a security fix. If Visual Studio says a package is missing, right-click the solution and choose "Restore NuGet Packages."
+
+If swapi.dev is ever down, set the SWAPI_BASE_URL environment variable to another mirror, e.g. `set SWAPI_BASE_URL=https://swapi.py4e.com/api`, before running.
+
+See SECURITY_UPDATES.md for every change and why. 
 
