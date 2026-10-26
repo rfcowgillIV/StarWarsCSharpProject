@@ -34,9 +34,9 @@
     <!-- SECURITY UPDATE (2026): Newtonsoft.Json 6.0.7 -> 13.0.3 (fixes CVE-2024-21907, a denial-of-service
          bug where deeply nested JSON could crash the app). BUG FIX: the HintPath used "..\packages", but
          NuGet restores packages next to the .sln file, which is two folders up ("..\..\packages"). -->
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\..\packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
