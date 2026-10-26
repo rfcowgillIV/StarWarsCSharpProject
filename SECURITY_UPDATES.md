@@ -75,3 +75,8 @@ something like `../../somewhere?x=` changed which address the program called. No
 
 This environment had no .NET compiler, so the code couldn't be compiled before committing. Steps
 1–3 above are the first real build, and any compiler error will point to the exact line.
+
+## Ongoing protection (added later in October 2026)
+
+- **`SECURITY.md`** tells people how to report a security problem privately instead of in a public issue. For the "Report a vulnerability" button to appear, turn on **Settings → Code security → Private vulnerability reporting**.
+- **CodeQL code scanning** (`.github/workflows/codeql.yml`): GitHub's free scanner checks the code for security bugs on every push and pull request to `master`, and weekly. Results appear under **Security → Code scanning**. Dependabot also keeps the workflow's own tools updated.
